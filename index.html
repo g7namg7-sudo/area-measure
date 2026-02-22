@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>면적 측정기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root {
+    --bg-dark:#0f1117;--bg-card:#1a1d27;--bg-card-hover:#222633;
+    --accent:#00e09e;--accent-dim:#00b07c;--accent-glow:rgba(0,224,158,0.15);--accent-glow-s:rgba(0,224,158,0.3);
+    --blue:#4da6ff;--blue-glow:rgba(77,166,255,0.3);
+    --text:#f0f2f5;--text2:#8b90a0;--text3:#555a6e;
+    --danger:#ff5c6a;--warn:#ffc04d;--border:rgba(255,255,255,0.06);
+    --r:14px;--rs:8px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg-dark);color:var(--text);height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;}
+
+  .header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;z-index:100;flex-shrink:0;}
+  .header-left{display:flex;align-items:center;gap:8px;}
+  .logo{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#00c4ff);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 12px var(--accent-glow);}
+  .htitle{font-weight:700;font-size:15px;letter-spacing:-0.3px;}
+  .htitle span{color:var(--accent);}
+
+  .mtog{display:flex;background:var(--bg-dark);border-radius:8px;padding:3px;gap:2px;}
+  .mtog-btn{padding:6px 14px;border:none;border-radius:6px;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--text3);}
+  .mtog-btn.on{background:var(--accent);color:var(--bg-dark);}
+  .mtog-btn.on.dist{background:var(--blue);}
+
+  .map-wrap{flex:1;position:relative;overflow:hidden;}
+  #mapOuter{width:100%;height:100%;overflow:hidden;touch-action:none;}
+  #mapInner{width:100%;height:100%;transform-origin:center center;transition:none;}
+  #map{width:100%;height:100%;}
+
+  .map-ctrls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:50;}
+  .mbtn{width:40px;height:40px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);}
+  .mbtn:active{transform:scale(.92);background:var(--bg-card-hover);}
+  .mbtn.gps-on{background:var(--blue);color:#fff;animation:gpsP 2s infinite;}
+  @keyframes gpsP{0%,100%{box-shadow:0 2px 16px var(--blue-glow);}50%{box-shadow:0 2px 24px var(--blue-glow),0 0 0 6px rgba(77,166,255,.1);}}
+
+  .mind{position:absolute;top:12px;left:12px;z-index:50;display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);max-width:calc(100vw - 80px);}
+  .mdot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .mind.drawing .mdot{background:var(--warn);}
+  .mind.complete .mdot{background:var(--accent);animation:none;}
+  .mind.dist .mdot{background:var(--blue);animation:none;}
+
+  /* Rotation indicator */
+  .rot-ind{position:absolute;bottom:12px;right:12px;z-index:50;display:none;align-items:center;gap:6px;padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;font-size:11px;font-weight:500;color:var(--text2);backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);cursor:pointer;}
+  .rot-ind.show{display:flex;}
+  .rot-ind .compass{width:20px;height:20px;position:relative;}
+  .rot-ind .needle{position:absolute;left:50%;top:2px;width:2px;height:8px;background:#ff4444;border-radius:1px;transform-origin:bottom center;margin-left:-1px;}
+
+  .ipanel{background:var(--bg-card);border-top:1px solid var(--border);padding:12px 14px;z-index:100;flex-shrink:0;}
+  .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .sc{background:var(--bg-dark);border:1px solid var(--border);border-radius:var(--rs);padding:10px;}
+  .sc.p{grid-column:1/-1;border-color:rgba(0,224,158,.2);background:linear-gradient(135deg,rgba(0,224,158,.05),rgba(0,196,255,.03));}
+  .sc.p.bl{border-color:rgba(77,166,255,.2);background:linear-gradient(135deg,rgba(77,166,255,.05),rgba(0,196,255,.03));}
+  .sl{font-size:10px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+  .sv{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--text);line-height:1.2;}
+  .sc.p .sv{color:var(--accent);font-size:26px;}
+  .sc.p.bl .sv{color:var(--blue);font-size:26px;}
+  .su{font-size:12px;color:var(--text2);font-weight:400;margin-left:2px;}
+  .ss{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;}
+
+  .arow{display:flex;gap:8px;}
+  .abtn{flex:1;padding:10px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg-dark);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .abtn:active{transform:scale(.97);}
+  .abtn.dg{border-color:rgba(255,92,106,.3);color:var(--danger);}
+  .abtn.dg:active{background:rgba(255,92,106,.15);}
+
+  .toast{position:absolute;bottom:160px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;opacity:0;pointer-events:none;transition:all .3s ease;z-index:200;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .ehint{text-align:center;padding:2px 0;}
+  .ehint p{font-size:12px;color:var(--text2);line-height:1.5;}
+
+  .lov{position:absolute;inset:0;background:var(--bg-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;transition:opacity .5s;}
+  .lov.h{opacity:0;pointer-events:none;}
+  .lspin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .ltxt{font-size:13px;color:var(--text2);}
+
+  .seglbl{background:rgba(0,0,0,.8);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;pointer-events:none;}
+
+  @media(min-width:768px){
+    .ipanel{position:absolute;bottom:20px;left:20px;width:320px;border-radius:var(--r);border:1px solid var(--border);z-index:100;box-shadow:0 8px 40px rgba(0,0,0,.4);}
+    .mind{top:20px;left:20px;}
+    .map-ctrls{top:20px;right:20px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="lov" id="lov"><div class="lspin"></div><div class="ltxt">카카오맵 로딩 중...</div></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">📐</div>
+    <div class="htitle">면적<span>측정기</span></div>
+  </div>
+  <div class="mtog">
+    <button class="mtog-btn on" id="btnA" onclick="swMode('area')">면적</button>
+    <button class="mtog-btn" id="btnD" onclick="swMode('dist')">거리</button>
+  </div>
+  <button class="mbtn" style="width:36px;height:36px;font-size:14px;" onclick="togMapType()">🗺️</button>
+</div>
+
+<div class="map-wrap">
+  <div id="mapOuter">
+    <div id="mapInner">
+      <div id="map"></div>
+    </div>
+  </div>
+  <div class="mind" id="mind"><div class="mdot"></div><span id="mtxt">지도를 탭하여 꼭짓점을 추가하세요</span></div>
+  <div class="map-ctrls">
+    <button class="mbtn" onclick="zI()">＋</button>
+    <button class="mbtn" onclick="zO()">－</button>
+    <button class="mbtn" id="gBtn" onclick="togGPS()">📍</button>
+    <button class="mbtn" id="rotResetBtn" onclick="resetRot()" style="display:none;" title="북쪽으로 정렬">🧭</button>
+  </div>
+  <div class="rot-ind" id="rotInd" onclick="resetRot()">
+    <div class="compass"><div class="needle" id="needle"></div></div>
+    <span id="rotDeg">0°</span>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="ipanel">
+  <div id="pAE" class="ehint"><p>👆 지도를 탭하여 꼭짓점을 순서대로 찍어주세요 (최소 3개)</p></div>
+  <div id="pA" style="display:none;">
+    <div class="sgrid">
+      <div class="sc p"><div class="sl">면적</div><div class="sv" id="vA">0<span class="su">평</span></div><div class="ss" id="vAS"></div></div>
+      <div class="sc"><div class="sl">둘레</div><div class="sv" id="vP">0<span class="su">m</span></div></div>
+      <div class="sc"><div class="sl">꼭짓점</div><div class="sv" id="vN">0<span class="su">개</span></div></div>
+    </div>
+    <div class="arow">
+      <button class="abtn dg" onclick="undo()">↩ 되돌리기</button>
+      <button class="abtn dg" onclick="clr()">✕ 초기화</button>
+    </div>
+  </div>
+  <div id="pDE" class="ehint" style="display:none;"><p>📏 지도를 탭하여 거리를 측정할 지점을 찍어주세요</p></div>
+  <div id="pD" style="display:none;">
+    <div class="sgrid">
+      <div class="sc p bl"><div class="sl">총 거리</div><div class="sv" id="vD">0<span class="su">m</span></div><div class="ss" id="vDS"></div></div>
+      <div class="sc"><div class="sl">마지막 구간</div><div class="sv" id="vLS">—<span class="su">m</span></div></div>
+      <div class="sc"><div class="sl">지점</div><div class="sv" id="vDN">0<span class="su">개</span></div></div>
+    </div>
+    <div class="arow">
+      <button class="abtn dg" onclick="undo()">↩ 되돌리기</button>
+      <button class="abtn dg" onclick="clr()">✕ 초기화</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var map=null,mode='area',mapTI=0;
+var aP=[],aM=[],aPL=null,aPG=null;
+var dP=[],dM=[],dPL=null,dLB=[];
+var gWId=null,gMk=null,gCir=null;
+var rotation=0;
+
+// ─── Two-finger rotation ───
+var mapOuter=null,mapInner=null;
+var touchStartAngle=null,startRotation=0;
+
+function getTouchAngle(t){
+  if(t.length<2)return null;
+  return Math.atan2(t[1].clientY-t[0].clientY,t[1].clientX-t[0].clientX)*180/Math.PI;
+}
+
+function initRotation(){
+  mapOuter=document.getElementById('mapOuter');
+  mapInner=document.getElementById('mapInner');
+
+  mapOuter.addEventListener('touchstart',function(e){
+    if(e.touches.length===2){
+      touchStartAngle=getTouchAngle(e.touches);
+      startRotation=rotation;
+    }
+  },{passive:true});
+
+  mapOuter.addEventListener('touchmove',function(e){
+    if(e.touches.length===2&&touchStartAngle!==null){
+      var cur=getTouchAngle(e.touches);
+      if(cur!==null){
+        var delta=cur-touchStartAngle;
+        rotation=startRotation+delta;
+        applyRotation();
+      }
+    }
+  },{passive:true});
+
+  mapOuter.addEventListener('touchend',function(e){
+    if(e.touches.length<2){touchStartAngle=null;}
+  },{passive:true});
+}
+
+function applyRotation(){
+  var norm=((rotation%360)+360)%360;
+  mapInner.style.transform='rotate('+rotation+'deg)';
+  // Scale up slightly to hide corners when rotated
+  var absAngle=Math.abs(rotation%90);
+  if(absAngle>45)absAngle=90-absAngle;
+  var scale=1+absAngle*0.008;
+  mapInner.style.transform='rotate('+rotation+'deg) scale('+scale+')';
+
+  // Update rotation indicator
+  var ri=document.getElementById('rotInd');
+  var rrb=document.getElementById('rotResetBtn');
+  if(Math.abs(norm)<1||Math.abs(norm-360)<1){
+    ri.classList.remove('show');
+    rrb.style.display='none';
+  }else{
+    ri.classList.add('show');
+    rrb.style.display='flex';
+    document.getElementById('needle').style.transform='rotate('+(-rotation)+'deg)';
+    document.getElementById('rotDeg').textContent=Math.round(norm)+'°';
+  }
+}
+
+function resetRot(){
+  rotation=0;
+  mapInner.style.transition='transform 0.3s ease';
+  applyRotation();
+  setTimeout(function(){mapInner.style.transition='none';},350);
+  toast('북쪽 정렬');
+}
+
+// ─── SDK ───
+function loadSDK(){
+  var s=document.createElement('script');
+  s.src='https://dapi.kakao.com/v2/maps/sdk.js?appkey=e5e0054c990ed5f8d13293fac6af6e00&autoload=false';
+  s.onload=function(){try{kakao.maps.load(initMap)}catch(e){showErr(e.message)}};
+  s.onerror=function(){showErr('SDK 로드 실패')};
+  document.head.appendChild(s);
+}
+function showErr(m){document.getElementById('lov').innerHTML='<div style="text-align:center;padding:24px;max-width:360px;"><div style="font-size:36px;margin-bottom:14px;">⚠️</div><div style="font-size:15px;font-weight:700;margin-bottom:8px;color:#ff5c6a;">로드 실패</div><div style="font-size:12px;color:#8b90a0;line-height:1.7;">'+m+'</div></div>';}
+
+function initMap(){
+  map=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(37.5665,126.9780),level:3});
+  kakao.maps.event.addListener(map,'click',function(e){
+    var ll=e.latLng;
+    if(mode==='area')addAP(ll.getLat(),ll.getLng());
+    else addDP(ll.getLat(),ll.getLng());
+  });
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(p){map.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));},function(){},{enableHighAccuracy:true});
+  }
+  document.getElementById('lov').classList.add('h');
+  initRotation();
+  updUI();
+}
+
+function swMode(m){mode=m;document.getElementById('btnA').className='mtog-btn'+(m==='area'?' on':'');document.getElementById('btnD').className='mtog-btn'+(m==='dist'?' on dist':'');updUI();}
+function zI(){if(map)map.setLevel(map.getLevel()-1);}
+function zO(){if(map)map.setLevel(map.getLevel()+1);}
+
+function togGPS(){
+  var btn=document.getElementById('gBtn');
+  if(!navigator.geolocation){toast('GPS 사용 불가');return;}
+  if(gWId!==null){navigator.geolocation.clearWatch(gWId);gWId=null;btn.classList.remove('gps-on');if(gMk){gMk.setMap(null);gMk=null;}if(gCir){gCir.setMap(null);gCir=null;}toast('GPS 추적 해제');return;}
+  btn.classList.add('gps-on');toast('GPS 추적 중...');
+  gWId=navigator.geolocation.watchPosition(function(p){
+    var pos=new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude);map.setCenter(pos);
+    if(!gMk){var el=document.createElement('div');el.style.cssText='width:16px;height:16px;background:#4da6ff;border:3px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(77,166,255,.6);';gMk=new kakao.maps.CustomOverlay({position:pos,content:el,yAnchor:.5,xAnchor:.5});gMk.setMap(map);}else gMk.setPosition(pos);
+    if(!gCir){gCir=new kakao.maps.Circle({center:pos,radius:p.coords.accuracy,strokeWeight:1,strokeColor:'#4da6ff',strokeOpacity:.3,fillColor:'#4da6ff',fillOpacity:.08});gCir.setMap(map);}else{gCir.setPosition(pos);gCir.setRadius(p.coords.accuracy);}
+  },function(){toast('위치 실패');btn.classList.remove('gps-on');gWId=null;},{enableHighAccuracy:true,maximumAge:3000,timeout:10000});
+}
+
+function togMapType(){
+  if(!map)return;mapTI=(mapTI+1)%3;var n=['일반 지도','위성 지도','하이브리드'];
+  map.removeOverlayMapTypeId(kakao.maps.MapTypeId.SKYVIEW);map.removeOverlayMapTypeId(kakao.maps.MapTypeId.HYBRID);
+  if(mapTI===1)map.addOverlayMapTypeId(kakao.maps.MapTypeId.SKYVIEW);if(mapTI===2)map.addOverlayMapTypeId(kakao.maps.MapTypeId.HYBRID);
+  toast(n[mapTI]);
+}
+
+// Area
+function addAP(lat,lng){
+  aP.push({lat:lat,lng:lng});
+  var c=document.createElement('div');c.style.cssText='width:24px;height:24px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f1117;border:2.5px solid #00e09e;box-shadow:0 2px 8px rgba(0,0,0,.4);font-family:JetBrains Mono,monospace;';
+  c.textContent=aP.length;
+  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:c,yAnchor:.5,xAnchor:.5});o.setMap(map);aM.push(o);
+  updAO();updUI();
+}
+function updAO(){
+  if(!map)return;var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
+  if(aPL)aPL.setMap(null);if(aPG)aPG.setMap(null);
+  if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(map);}
+  if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(map);}
+}
+
+// Distance
+function addDP(lat,lng){
+  dP.push({lat:lat,lng:lng});
+  var c=document.createElement('div');c.style.cssText='width:22px;height:22px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0f1117;border:2.5px solid #4da6ff;box-shadow:0 2px 8px rgba(0,0,0,.4);font-family:JetBrains Mono,monospace;';
+  c.textContent=dP.length;
+  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:c,yAnchor:.5,xAnchor:.5});o.setMap(map);dM.push(o);
+  if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;
+    var le=document.createElement('div');le.className='seglbl';le.textContent=fD(d);
+    var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:le,yAnchor:1.8,xAnchor:.5});lo.setMap(map);dLB.push(lo);}
+  updDO();updUI();
+}
+function updDO(){
+  if(!map)return;var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
+  if(dPL)dPL.setMap(null);
+  if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(map);}
+}
+
+function undo(){
+  if(mode==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}
+  else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}
+  updUI();toast('마지막 점 제거');
+}
+function clr(){
+  if(mode==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}
+  else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}
+  updUI();toast('초기화 완료');
+}
+
+// Calc
+function calcA(pts){if(pts.length<3)return 0;var R=6371000,rad=Math.PI/180,t=0,n=pts.length;for(var i=0;i<n;i++){var j=(i+1)%n,k=(i+2)%n;t+=(pts[k].lng-pts[i].lng)*rad*Math.sin(pts[j].lat*rad);}return Math.abs(t*R*R/2);}
+function calcP(pts){if(pts.length<2)return 0;var t=0;for(var i=0;i<pts.length;i++)t+=hav(pts[i],pts[(i+1)%pts.length]);return t;}
+function calcTD(pts){if(pts.length<2)return 0;var t=0;for(var i=0;i<pts.length-1;i++)t+=hav(pts[i],pts[i+1]);return t;}
+function hav(a,b){var R=6371000,r=Math.PI/180,dL=(b.lat-a.lat)*r,dG=(b.lng-a.lng)*r,s=Math.sin(dL/2),c=Math.sin(dG/2),h=s*s+Math.cos(a.lat*r)*Math.cos(b.lat*r)*c*c;return 2*R*Math.asin(Math.sqrt(h));}
+function fD(m){return m>=1000?(m/1000).toFixed(2)+' km':m.toFixed(1)+' m';}
+function fDH(m){if(m>=1000)return(m/1000).toLocaleString('ko-KR',{maximumFractionDigits:2})+'<span class="su">km</span>';return m.toLocaleString('ko-KR',{maximumFractionDigits:1})+'<span class="su">m</span>';}
+
+function updUI(){
+  var ind=document.getElementById('mind'),mt=document.getElementById('mtxt');
+  ['pAE','pA','pDE','pD'].forEach(function(id){document.getElementById(id).style.display='none';});
+  if(mode==='area'){
+    if(!aP.length){document.getElementById('pAE').style.display='block';ind.className='mind';mt.textContent='지도를 탭하여 꼭짓점을 추가하세요';}
+    else{
+      document.getElementById('pA').style.display='block';
+      var area=calcA(aP),peri=calcP(aP),pyeong=area/3.305785;
+      if(aP.length<3){document.getElementById('vA').innerHTML='—<span class="su">평</span>';document.getElementById('vAS').textContent='꼭짓점 3개 이상 필요';}
+      else{
+        document.getElementById('vA').innerHTML=pyeong.toLocaleString('ko-KR',{maximumFractionDigits:1})+'<span class="su">평</span>';
+        document.getElementById('vAS').textContent=area.toLocaleString('ko-KR',{maximumFractionDigits:1})+' ㎡';
+      }
+      document.getElementById('vP').innerHTML=fDH(peri);
+      document.getElementById('vN').innerHTML=aP.length+'<span class="su">개</span>';
+      if(aP.length<3){ind.className='mind drawing';mt.textContent='꼭짓점 추가 중... ('+(3-aP.length)+'개 더 필요)';}
+      else{ind.className='mind complete';mt.textContent=aP.length+'각형 · '+pyeong.toLocaleString('ko-KR',{maximumFractionDigits:0})+' 평 · '+area.toLocaleString('ko-KR',{maximumFractionDigits:0})+' ㎡';}
+    }
+  }else{
+    if(!dP.length){document.getElementById('pDE').style.display='block';ind.className='mind dist';mt.textContent='지도를 탭하여 거리를 측정하세요';}
+    else{
+      document.getElementById('pD').style.display='block';
+      var td=calcTD(dP);
+      document.getElementById('vD').innerHTML=fDH(td);
+      document.getElementById('vDS').textContent=td>=1000?td.toLocaleString('ko-KR',{maximumFractionDigits:0})+' m':'';
+      if(dP.length>=2){var ls=hav(dP[dP.length-2],dP[dP.length-1]);document.getElementById('vLS').innerHTML=fDH(ls);}
+      else document.getElementById('vLS').innerHTML='—<span class="su">m</span>';
+      document.getElementById('vDN').innerHTML=dP.length+'<span class="su">개</span>';
+      ind.className='mind dist';mt.textContent='거리 측정 · '+fD(td);
+    }
+  }
+}
+
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show')},2000);}
+
+updUI();loadSDK();
+</script>
+</body>
+</html>
