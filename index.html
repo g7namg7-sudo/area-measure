@@ -44,7 +44,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .srch-item .sname{font-weight:600;color:var(--text);margin-bottom:2px;}
 .srch-item .saddr{color:var(--text3);font-size:11px;}
 
-/* Map – NO transform tricks, map is 100% direct */
 .mw{flex:1;position:relative;overflow:hidden;}
 #map{position:absolute;inset:0;width:100%;height:100%;}
 
@@ -52,23 +51,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .mb{width:40px;height:40px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);}
 .mb:active{transform:scale(.92);}
 .mb.gon{background:var(--blue);color:#fff;animation:gp 2s infinite;}
-.mb.ton{background:var(--accent);color:var(--bg);}
 @keyframes gp{0%,100%{box-shadow:0 2px 16px rgba(77,166,255,.3);}50%{box-shadow:0 2px 24px rgba(77,166,255,.3),0 0 0 6px rgba(77,166,255,.1);}}
-
-.compass-wrap{position:absolute;bottom:16px;right:12px;z-index:50;display:none;align-items:center;justify-content:center;width:48px;height:48px;cursor:pointer;}
-.compass-wrap.show{display:flex;}
-.compass-ring{width:48px;height:48px;background:var(--card);border:1px solid var(--border);border-radius:50%;box-shadow:0 2px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-.compass-n{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;color:#ff4444;}
-.compass-needle{width:3px;height:18px;background:linear-gradient(to bottom,#ff4444 50%,#fff 50%);border-radius:2px;transform-origin:center center;}
-.compass-deg{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text2);white-space:nowrap;background:var(--card);padding:1px 6px;border-radius:8px;border:1px solid var(--border);}
-
-/* Tilt slider popup */
-.tilt-popup{position:absolute;bottom:70px;left:12px;z-index:60;display:none;flex-direction:column;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 10px;box-shadow:0 4px 20px rgba(0,0,0,.5);}
-.tilt-popup.show{display:flex;}
-.tilt-popup label{font-size:10px;color:var(--text2);font-weight:600;}
-.tilt-slider{-webkit-appearance:none;appearance:none;width:120px;height:6px;background:var(--bg);border-radius:3px;outline:none;}
-.tilt-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);}
-.tilt-val{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--accent);}
 
 .mi{position:absolute;top:12px;left:12px;z-index:50;display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);max-width:calc(100vw - 80px);}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pu 2s infinite;}
@@ -127,20 +110,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <button class="mb" onclick="zi()">＋</button>
     <button class="mb" onclick="zo()">－</button>
     <button class="mb" id="gB" onclick="tg()">📍</button>
-    <button class="mb" id="tiltBtn" onclick="toggleTilt()">↕</button>
-  </div>
-  <div class="compass-wrap" id="compWrap" onclick="resetRot()">
-    <div class="compass-ring">
-      <div class="compass-n" id="compN">N</div>
-      <div class="compass-needle" id="compNeedle"></div>
-    </div>
-    <div class="compass-deg" id="compDeg">0°</div>
-  </div>
-  <div class="tilt-popup" id="tiltPopup">
-    <label>3D 틸트</label>
-    <input type="range" class="tilt-slider" id="tiltSlider" min="0" max="60" value="0" oninput="setTilt(this.value)">
-    <div class="tilt-val" id="tiltVal">0°</div>
-    <div style="font-size:9px;color:var(--text3);cursor:pointer;margin-top:2px;" onclick="setTilt(0);document.getElementById('tiltSlider').value=0;">초기화</div>
   </div>
   <div class="tst" id="tst"></div>
 </div>
@@ -173,11 +142,7 @@ var M,md='area',mti=0,ps=null;
 var aP=[],aM=[],aPL=null,aPG=null;
 var dP=[],dM=[],dPL=null,dLB=[];
 var gW=null,gMk=null,gCr=null;
-var rotation=0,tilt=0;
-var touchStartAngle=null,startRotation=0;
 var searchMk=null;
-var allOvEls=[];
-var tiltOpen=false;
 
 function loadSDK(){
   var s=document.createElement('script');
@@ -191,10 +156,19 @@ function err(m){document.getElementById('ov').innerHTML='<div style="text-align:
 function init(){
   M=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(37.5665,126.9780),level:3});
   ps=new kakao.maps.services.Places();
-  kakao.maps.event.addListener(M,'click',function(e){var ll=e.latLng;if(md==='area')addA(ll.getLat(),ll.getLng());else addD(ll.getLat(),ll.getLng());});
-  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){M.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));},function(){},{enableHighAccuracy:true,timeout:5000});}
-  initRotation();initSearch();
-  document.getElementById('ov').classList.add('h');ui();
+  kakao.maps.event.addListener(M,'click',function(e){
+    var ll=e.latLng;
+    if(md==='area')addA(ll.getLat(),ll.getLng());
+    else addD(ll.getLat(),ll.getLng());
+  });
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(p){
+      M.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));
+    },function(){},{enableHighAccuracy:true,timeout:5000});
+  }
+  initSearch();
+  document.getElementById('ov').classList.add('h');
+  ui();
 }
 
 // ─── Search ───
@@ -238,97 +212,6 @@ function doSearch(){
   });
 }
 
-// ─── Two-finger Rotation ONLY (tilt removed from gesture) ───
-function initRotation(){
-  var mapEl=document.getElementById('map');
-
-  mapEl.addEventListener('touchstart',function(e){
-    if(e.touches.length===2){
-      touchStartAngle=getAngle(e.touches);
-      startRotation=rotation;
-    }
-  },{passive:true});
-
-  mapEl.addEventListener('touchmove',function(e){
-    if(e.touches.length===2&&touchStartAngle!==null){
-      var curAngle=getAngle(e.touches);
-      if(curAngle!==null){
-        var delta=curAngle-touchStartAngle;
-        // Only rotate if twist is significant (avoid accidental rotation during pinch-zoom)
-        if(Math.abs(delta)>2){
-          rotation=startRotation+delta;
-          applyTransform();
-        }
-      }
-    }
-  },{passive:true});
-
-  mapEl.addEventListener('touchend',function(e){
-    if(e.touches.length<2){touchStartAngle=null;}
-  },{passive:true});
-}
-
-function getAngle(t){if(t.length<2)return null;return Math.atan2(t[1].clientY-t[0].clientY,t[1].clientX-t[0].clientX)*180/Math.PI;}
-
-function applyTransform(){
-  // Apply rotation and tilt via CSS on the map container
-  var mapEl=document.getElementById('map');
-  mapEl.style.transformOrigin='center center';
-  mapEl.style.transform='perspective(1200px) rotateX('+tilt+'deg) rotate('+rotation+'deg)';
-
-  // Compensate size to avoid edge gaps during rotation/tilt
-  var scale=1;
-  if(Math.abs(rotation%360)>1||tilt>1){
-    var absR=Math.abs((rotation%360)*Math.PI/180);
-    var s=Math.abs(Math.sin(absR));
-    var c=Math.abs(Math.cos(absR));
-    // For a square, bounding box factor is sin+cos (max ~1.414 at 45°)
-    scale=Math.max(1,s+c);
-    // Extra scale for tilt perspective
-    if(tilt>1) scale*=(1+tilt*0.003);
-  }
-  mapEl.style.width=Math.ceil(scale*100)+'%';
-  mapEl.style.height=Math.ceil(scale*100)+'%';
-  mapEl.style.left=((1-scale)*50)+'%';
-  mapEl.style.top=((1-scale)*50)+'%';
-
-  // Counter-rotate overlay elements
-  var deg=-rotation;
-  allOvEls.forEach(function(el){if(el&&el.style)el.style.transform='rotate('+deg+'deg)';});
-
-  // Compass
-  var norm=((rotation%360)+360)%360;
-  var cw=document.getElementById('compWrap');
-  if((norm<1||norm>359)&&tilt<1){cw.classList.remove('show');}
-  else{cw.classList.add('show');}
-  document.getElementById('compNeedle').style.transform='rotate('+(-rotation)+'deg)';
-  document.getElementById('compN').style.transform='translateX(-50%) rotate('+(-rotation)+'deg)';
-  document.getElementById('compDeg').textContent=Math.round(norm)+'°';
-
-  // Relayout map
-  if(M) M.relayout();
-}
-
-function resetRot(){
-  rotation=0;tilt=0;
-  document.getElementById('tiltSlider').value=0;
-  document.getElementById('tiltVal').textContent='0°';
-  applyTransform();
-  ts('북쪽 정렬');
-}
-
-// ─── Tilt via button + slider ───
-function toggleTilt(){
-  tiltOpen=!tiltOpen;
-  document.getElementById('tiltPopup').classList.toggle('show',tiltOpen);
-  document.getElementById('tiltBtn').classList.toggle('ton',tiltOpen);
-}
-function setTilt(val){
-  tilt=parseInt(val)||0;
-  document.getElementById('tiltVal').textContent=tilt+'°';
-  applyTransform();
-}
-
 // ─── Controls ───
 function sw(m){md=m;document.getElementById('bA').className=m==='area'?'on':'';document.getElementById('bD').className=m==='dist'?'on bl':'';ui();}
 function zi(){if(M)M.setLevel(M.getLevel()-1);}
@@ -357,23 +240,49 @@ function mkEl(n,color){
   var c=document.createElement('div');
   c.style.cssText='width:24px;height:24px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f1117;border:2.5px solid '+color+';box-shadow:0 2px 8px rgba(0,0,0,.4);font-family:JetBrains Mono,monospace;';
   c.textContent=n;
-  allOvEls.push(c);
   return c;
 }
 function mkLbl(txt){
   var le=document.createElement('div');le.className='slbl';le.textContent=txt;
-  allOvEls.push(le);
   return le;
 }
 
-function addA(lat,lng){aP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(aP.length,'#00e09e'),yAnchor:.5,xAnchor:.5});o.setMap(M);aM.push(o);updAO();ui();}
-function updAO(){if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(M);}if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(M);}}
+function addA(lat,lng){
+  aP.push({lat:lat,lng:lng});
+  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(aP.length,'#00e09e'),yAnchor:.5,xAnchor:.5});
+  o.setMap(M);aM.push(o);updAO();ui();
+}
+function updAO(){
+  if(aPL){aPL.setMap(null);aPL=null;}
+  if(aPG){aPG.setMap(null);aPG=null;}
+  var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
+  if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(M);}
+  if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(M);}
+}
 
-function addD(lat,lng){dP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});o.setMap(M);dM.push(o);if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:mkLbl(fD(d)),yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}updDO();ui();}
-function updDO(){if(dPL){dPL.setMap(null);dPL=null;}var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(M);}}
+function addD(lat,lng){
+  dP.push({lat:lat,lng:lng});
+  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});
+  o.setMap(M);dM.push(o);
+  if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:mkLbl(fD(d)),yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}
+  updDO();ui();
+}
+function updDO(){
+  if(dPL){dPL.setMap(null);dPL=null;}
+  var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
+  if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(M);}
+}
 
-function ud(){if(md==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}ui();ts('마지막 점 제거');}
-function cl(){if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}allOvEls=[];ui();ts('초기화 완료');}
+function ud(){
+  if(md==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}
+  else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}
+  ui();ts('마지막 점 제거');
+}
+function cl(){
+  if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}
+  else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}
+  ui();ts('초기화 완료');
+}
 
 // ─── Calc ───
 function calcA(pts){if(pts.length<3)return 0;var R=6371000,rad=Math.PI/180,t=0,n=pts.length;for(var i=0;i<n;i++){var j=(i+1)%n,k=(i+2)%n;t+=(pts[k].lng-pts[i].lng)*rad*Math.sin(pts[j].lat*rad);}return Math.abs(t*R*R/2);}
