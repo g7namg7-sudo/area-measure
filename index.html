@@ -68,9 +68,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .sc.pm .sv{color:var(--accent);font-size:26px;} .sc.pm.bl .sv{color:var(--blue);font-size:26px;}
 .su{font-size:12px;color:var(--text2);font-weight:400;margin-left:2px;}
 .ss{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px;}
-.ar{display:flex;gap:8px;}
+.ar{display:flex;gap:8px;margin-bottom:8px;}
+.ar2{display:flex;gap:8px;}
 .ab{flex:1;padding:10px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px;}
 .ab:active{transform:scale(.97);} .ab.dg{border-color:rgba(255,92,106,.3);color:var(--danger);}
+.ab.sv-btn{border-color:rgba(0,224,158,.3);color:var(--accent);}
+.ab.ld-btn{border-color:rgba(77,166,255,.3);color:var(--blue);}
 .tst{position:absolute;bottom:160px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;opacity:0;pointer-events:none;transition:.3s;z-index:200;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);}
 .tst.sh{opacity:1;transform:translateX(-50%) translateY(0);}
 .eh{text-align:center;padding:2px 0;} .eh p{font-size:12px;color:var(--text2);line-height:1.5;}
@@ -79,6 +82,39 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .sp{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sn .8s linear infinite;margin-bottom:14px;}
 @keyframes sn{to{transform:rotate(360deg);}}
 .slbl{background:rgba(0,0,0,.8);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;white-space:nowrap;pointer-events:none;}
+
+/* ─── Save/Load Modal ─── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:360px;max-height:80vh;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+.modal-hd{padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hd h3{font-size:15px;font-weight:700;}
+.modal-close{width:32px;height:32px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-close:active{transform:scale(.9);}
+.modal-body{padding:14px 18px;overflow-y:auto;flex:1;}
+
+/* Save input */
+.save-row{display:flex;gap:8px;margin-bottom:12px;}
+.save-input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;}
+.save-input::placeholder{color:var(--text3);}
+.save-input:focus{border-color:rgba(0,224,158,.4);}
+.save-ok{padding:10px 16px;border-radius:8px;border:none;background:var(--accent);color:var(--bg);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.save-ok:active{transform:scale(.95);}
+
+/* Saved list */
+.saved-empty{text-align:center;padding:30px 10px;color:var(--text3);font-size:13px;}
+.saved-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s;}
+.saved-item:active{border-color:rgba(0,224,158,.3);background:var(--ch);}
+.saved-item .si-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.saved-item .si-name{font-weight:600;font-size:13px;color:var(--text);}
+.saved-item .si-date{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.saved-item .si-info{font-size:11px;color:var(--text2);}
+.saved-item .si-type{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;margin-right:6px;}
+.si-type.area{background:rgba(0,224,158,.15);color:var(--accent);}
+.si-type.dist{background:rgba(77,166,255,.15);color:var(--blue);}
+.saved-item .si-del{width:28px;height:28px;background:transparent;border:1px solid rgba(255,92,106,.2);border-radius:6px;color:var(--danger);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.saved-item .si-del:active{background:rgba(255,92,106,.1);transform:scale(.9);}
+
 @media(display-mode:standalone){.hd{padding-top:max(10px,env(safe-area-inset-top));}.ip{padding-bottom:max(12px,env(safe-area-inset-bottom));}}
 @media(min-width:768px){.ip{position:absolute;bottom:20px;left:20px;width:320px;border-radius:var(--r);border:1px solid var(--border);z-index:100;box-shadow:0 8px 40px rgba(0,0,0,.4);}}
 </style>
@@ -123,6 +159,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div class="sc"><div class="sl">꼭짓점</div><div class="sv" id="vN">0<span class="su">개</span></div></div>
     </div>
     <div class="ar"><button class="ab dg" onclick="ud()">↩ 되돌리기</button><button class="ab dg" onclick="cl()">✕ 초기화</button></div>
+    <div class="ar2"><button class="ab sv-btn" onclick="openSave()">💾 저장</button><button class="ab ld-btn" onclick="openLoad()">📂 불러오기</button></div>
   </div>
   <div id="eD" class="eh" style="display:none;"><p>📏 지도를 탭하여 거리를 측정할 지점을 찍어주세요</p></div>
   <div id="pD" style="display:none;">
@@ -132,6 +169,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div class="sc"><div class="sl">지점</div><div class="sv" id="vDN">0<span class="su">개</span></div></div>
     </div>
     <div class="ar"><button class="ab dg" onclick="ud()">↩ 되돌리기</button><button class="ab dg" onclick="cl()">✕ 초기화</button></div>
+    <div class="ar2"><button class="ab sv-btn" onclick="openSave()">💾 저장</button><button class="ab ld-btn" onclick="openLoad()">📂 불러오기</button></div>
+  </div>
+  <!-- Empty state: load button only -->
+  <div id="eAL" style="display:none;"><div class="ar2" style="margin-top:8px;"><button class="ab ld-btn" onclick="openLoad()">📂 저장 기록 불러오기</button></div></div>
+  <div id="eDL" style="display:none;"><div class="ar2" style="margin-top:8px;"><button class="ab ld-btn" onclick="openLoad()">📂 저장 기록 불러오기</button></div></div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal-bg" id="saveModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>💾 측정 결과 저장</h3><button class="modal-close" onclick="closeSave()">✕</button></div>
+    <div class="modal-body">
+      <div class="save-row">
+        <input class="save-input" id="saveName" type="text" placeholder="이름 입력 (예: 우리 밭)" maxlength="30">
+        <button class="save-ok" onclick="doSave()">저장</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;" id="savePreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Load Modal -->
+<div class="modal-bg" id="loadModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>📂 저장 기록</h3><button class="modal-close" onclick="closeLoad()">✕</button></div>
+    <div class="modal-body" id="loadList"></div>
   </div>
 </div>
 
@@ -143,6 +206,7 @@ var aP=[],aM=[],aPL=null,aPG=null;
 var dP=[],dM=[],dPL=null,dLB=[];
 var gW=null,gMk=null,gCr=null;
 var searchMk=null;
+var STORE_KEY='area_measure_saves';
 
 function loadSDK(){
   var s=document.createElement('script');
@@ -156,16 +220,8 @@ function err(m){document.getElementById('ov').innerHTML='<div style="text-align:
 function init(){
   M=new kakao.maps.Map(document.getElementById('map'),{center:new kakao.maps.LatLng(37.5665,126.9780),level:3});
   ps=new kakao.maps.services.Places();
-  kakao.maps.event.addListener(M,'click',function(e){
-    var ll=e.latLng;
-    if(md==='area')addA(ll.getLat(),ll.getLng());
-    else addD(ll.getLat(),ll.getLng());
-  });
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(function(p){
-      M.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));
-    },function(){},{enableHighAccuracy:true,timeout:5000});
-  }
+  kakao.maps.event.addListener(M,'click',function(e){var ll=e.latLng;if(md==='area')addA(ll.getLat(),ll.getLng());else addD(ll.getLat(),ll.getLng());});
+  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){M.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));},function(){},{enableHighAccuracy:true,timeout:5000});}
   initSearch();
   document.getElementById('ov').classList.add('h');
   ui();
@@ -247,42 +303,14 @@ function mkLbl(txt){
   return le;
 }
 
-function addA(lat,lng){
-  aP.push({lat:lat,lng:lng});
-  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(aP.length,'#00e09e'),yAnchor:.5,xAnchor:.5});
-  o.setMap(M);aM.push(o);updAO();ui();
-}
-function updAO(){
-  if(aPL){aPL.setMap(null);aPL=null;}
-  if(aPG){aPG.setMap(null);aPG=null;}
-  var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
-  if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(M);}
-  if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(M);}
-}
+function addA(lat,lng){aP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(aP.length,'#00e09e'),yAnchor:.5,xAnchor:.5});o.setMap(M);aM.push(o);updAO();ui();}
+function updAO(){if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(M);}if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(M);}}
 
-function addD(lat,lng){
-  dP.push({lat:lat,lng:lng});
-  var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});
-  o.setMap(M);dM.push(o);
-  if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:mkLbl(fD(d)),yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}
-  updDO();ui();
-}
-function updDO(){
-  if(dPL){dPL.setMap(null);dPL=null;}
-  var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});
-  if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(M);}
-}
+function addD(lat,lng){dP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});o.setMap(M);dM.push(o);if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:mkLbl(fD(d)),yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}updDO();ui();}
+function updDO(){if(dPL){dPL.setMap(null);dPL=null;}var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(M);}}
 
-function ud(){
-  if(md==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}
-  else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}
-  ui();ts('마지막 점 제거');
-}
-function cl(){
-  if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}
-  else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}
-  ui();ts('초기화 완료');
-}
+function ud(){if(md==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}ui();ts('마지막 점 제거');}
+function cl(){if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}ui();ts('초기화 완료');}
 
 // ─── Calc ───
 function calcA(pts){if(pts.length<3)return 0;var R=6371000,rad=Math.PI/180,t=0,n=pts.length;for(var i=0;i<n;i++){var j=(i+1)%n,k=(i+2)%n;t+=(pts[k].lng-pts[i].lng)*rad*Math.sin(pts[j].lat*rad);}return Math.abs(t*R*R/2);}
@@ -292,29 +320,98 @@ function hav(a,b){var R=6371000,r=Math.PI/180,dL=(b.lat-a.lat)*r,dG=(b.lng-a.lng
 function fD(m){return m>=1000?(m/1000).toFixed(2)+' km':m.toFixed(1)+' m';}
 function fH(m){if(m>=1000)return(m/1000).toLocaleString('ko-KR',{maximumFractionDigits:2})+'<span class="su">km</span>';return m.toLocaleString('ko-KR',{maximumFractionDigits:1})+'<span class="su">m</span>';}
 
-function ui(){
-  var ind=document.getElementById('mi'),mt=document.getElementById('mt');
-  ['eA','pA','eD','pD'].forEach(function(id){document.getElementById(id).style.display='none';});
-  if(md==='area'){
-    if(!aP.length){document.getElementById('eA').style.display='block';ind.className='mi';mt.textContent='지도를 탭하여 꼭짓점을 추가하세요';}
-    else{document.getElementById('pA').style.display='block';var area=calcA(aP),peri=calcP(aP),py=area/3.305785;
-      if(aP.length<3){document.getElementById('vA').innerHTML='—<span class="su">평</span>';document.getElementById('vAS').textContent='꼭짓점 3개 이상 필요';}
-      else{document.getElementById('vA').innerHTML=py.toLocaleString('ko-KR',{maximumFractionDigits:1})+'<span class="su">평</span>';document.getElementById('vAS').textContent=area.toLocaleString('ko-KR',{maximumFractionDigits:1})+' ㎡';}
-      document.getElementById('vP').innerHTML=fH(peri);document.getElementById('vN').innerHTML=aP.length+'<span class="su">개</span>';
-      if(aP.length<3){ind.className='mi dr';mt.textContent='꼭짓점 추가 중... ('+(3-aP.length)+'개 더 필요)';}
-      else{ind.className='mi ok';mt.textContent=aP.length+'각형 · '+py.toLocaleString('ko-KR',{maximumFractionDigits:0})+' 평 · '+area.toLocaleString('ko-KR',{maximumFractionDigits:0})+' ㎡';}}
-  }else{
-    if(!dP.length){document.getElementById('eD').style.display='block';ind.className='mi di';mt.textContent='지도를 탭하여 거리를 측정하세요';}
-    else{document.getElementById('pD').style.display='block';var td=calcTD(dP);
-      document.getElementById('vD').innerHTML=fH(td);document.getElementById('vDS').textContent=td>=1000?td.toLocaleString('ko-KR',{maximumFractionDigits:0})+' m':'';
-      if(dP.length>=2){var ls=hav(dP[dP.length-2],dP[dP.length-1]);document.getElementById('vLS').innerHTML=fH(ls);}else document.getElementById('vLS').innerHTML='—<span class="su">m</span>';
-      document.getElementById('vDN').innerHTML=dP.length+'<span class="su">개</span>';ind.className='mi di';mt.textContent='거리 측정 · '+fD(td);}
-  }
+// ─── Save / Load ───
+function getSaves(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch(e){return[];}}
+function putSaves(arr){localStorage.setItem(STORE_KEY,JSON.stringify(arr));}
+
+function openSave(){
+  var pts=md==='area'?aP:dP;
+  if(pts.length<2){ts('저장할 데이터가 없습니다');return;}
+  document.getElementById('saveModal').classList.add('show');
+  document.getElementById('saveName').value='';document.getElementById('saveName').focus();
+  // Preview
+  var prev='';
+  if(md==='area'&&aP.length>=3){var a=calcA(aP),py=a/3.305785;prev='면적 '+py.toFixed(1)+'평 ('+a.toFixed(1)+' ㎡) · '+aP.length+'각형';}
+  else if(md==='area'){prev='면적 모드 · 꼭짓점 '+aP.length+'개';}
+  else{var td=calcTD(dP);prev='거리 '+fD(td)+' · 지점 '+dP.length+'개';}
+  document.getElementById('savePreview').textContent=prev;
+}
+function closeSave(){document.getElementById('saveModal').classList.remove('show');}
+
+function doSave(){
+  var name=document.getElementById('saveName').value.trim();
+  if(!name){ts('이름을 입력하세요');document.getElementById('saveName').focus();return;}
+  var pts=md==='area'?aP.slice():dP.slice();
+  var center=M?{lat:M.getCenter().getLat(),lng:M.getCenter().getLng()}:null;
+  var level=M?M.getLevel():3;
+  var info={};
+  if(md==='area'&&aP.length>=3){var a=calcA(aP),py=a/3.305785,pe=calcP(aP);info={area:a,pyeong:py,perimeter:pe};}
+  else if(md==='dist'){var td=calcTD(dP);info={distance:td};}
+  var record={id:Date.now(),name:name,mode:md,points:pts,center:center,level:level,info:info,date:new Date().toISOString()};
+  var saves=getSaves();saves.unshift(record);if(saves.length>50)saves=saves.slice(0,50);
+  putSaves(saves);
+  closeSave();ts('💾 "'+name+'" 저장 완료');
 }
 
-function ts(m){var t=document.getElementById('tst');t.textContent=m;t.classList.add('sh');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('sh')},2000);}
+function openLoad(){
+  document.getElementById('loadModal').classList.add('show');
+  renderLoadList();
+}
+function closeLoad(){document.getElementById('loadModal').classList.remove('show');}
 
-ui();loadSDK();
-</script>
-</body>
-</html>
+function renderLoadList(){
+  var saves=getSaves();
+  var el=document.getElementById('loadList');
+  if(!saves.length){el.innerHTML='<div class="saved-empty">저장된 기록이 없습니다</div>';return;}
+  el.innerHTML='';
+  saves.forEach(function(rec,idx){
+    var div=document.createElement('div');div.className='saved-item';
+    var dateStr='';
+    try{var d=new Date(rec.date);dateStr=(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');}catch(e){}
+    var infoStr='';
+    if(rec.mode==='area'){
+      if(rec.info&&rec.info.pyeong)infoStr=rec.info.pyeong.toFixed(1)+'평 · '+rec.info.area.toFixed(1)+' ㎡ · 둘레 '+fD(rec.info.perimeter);
+      else infoStr='꼭짓점 '+rec.points.length+'개';
+    }else{
+      if(rec.info&&rec.info.distance)infoStr='총 '+fD(rec.info.distance)+' · 지점 '+rec.points.length+'개';
+      else infoStr='지점 '+rec.points.length+'개';
+    }
+    div.innerHTML='<div class="si-top"><div><span class="si-type '+(rec.mode==='area'?'area':'dist')+'">'+(rec.mode==='area'?'면적':'거리')+'</span><span class="si-name">'+rec.name+'</span></div><button class="si-del" data-idx="'+idx+'">🗑</button></div><div class="si-info">'+infoStr+'</div><div class="si-date">'+dateStr+'</div>';
+    
+    // Load on click (but not on delete button)
+    div.addEventListener('click',function(e){
+      if(e.target.closest('.si-del'))return;
+      doLoad(rec);
+    });
+    // Delete button
+    var delBtn=div.querySelector('.si-del');
+    delBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(confirm('"'+rec.name+'" 기록을 삭제할까요?')){
+        var s=getSaves();s.splice(idx,1);putSaves(s);renderLoadList();ts('삭제 완료');
+      }
+    });
+    el.appendChild(div);
+  });
+}
+
+function doLoad(rec){
+  // Clear current data
+  cl();
+  // Switch mode
+  md=rec.mode;
+  document.getElementById('bA').className=md==='area'?'on':'';
+  document.getElementById('bD').className=md==='dist'?'on bl':'';
+  // Move map
+  if(rec.center&&M){M.setCenter(new kakao.maps.LatLng(rec.center.lat,rec.center.lng));M.setLevel(rec.level||3);}
+  // Restore points
+  if(md==='area'){
+    rec.points.forEach(function(p){addA(p.lat,p.lng);});
+  }else{
+    rec.points.forEach(function(p){addD(p.lat,p.lng);});
+  }
+  // Fit bounds
+  if(rec.points.length>=2&&M){
+    var bounds=new kakao.maps.LatLngBounds();
+    rec.points.forEach(function(p){bounds.extend(new kakao.maps.LatLng(p.lat,p.lng));});
+    M.setBounds(bounds,80
