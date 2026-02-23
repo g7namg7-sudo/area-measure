@@ -396,29 +396,15 @@ function renderLoadList(){
 }
 
 function doLoad(rec){
-  // Clear current data
-  cl();
-  // Switch mode
+ cl();
   md=rec.mode;
   document.getElementById('bA').className=md==='area'?'on':'';
   document.getElementById('bD').className=md==='dist'?'on bl':'';
-  // Move map
   if(rec.center&&M){M.setCenter(new kakao.maps.LatLng(rec.center.lat,rec.center.lng));M.setLevel(rec.level||3);}
-  // Restore points
-  if(md==='area'){
-    rec.points.forEach(function(p){addA(p.lat,p.lng);});
-  }else{
-    rec.points.forEach(function(p){addD(p.lat,p.lng);});
-  }
-  // Fit bounds
-  if(rec.points.length>=2&&M){
-    var bounds=new kakao.maps.LatLngBounds();
-    rec.points.forEach(function(p){bounds.extend(new kakao.maps.LatLng(p.lat,p.lng));});
-       M.setBounds(bounds,80,50,80,50);
-  }
-  closeLoad();
-  ui();
-  ts('📂 "'+rec.name+'" 불러오기 완료');
+  if(md==='area'){rec.points.forEach(function(p){addA(p.lat,p.lng);});}
+  else{rec.points.forEach(function(p){addD(p.lat,p.lng);});}
+  if(rec.points.length>=2&&M){var bounds=new kakao.maps.LatLngBounds();rec.points.forEach(function(p){bounds.extend(new kakao.maps.LatLng(p.lat,p.lng));});M.setBounds(bounds);}
+  closeLoad();ui();ts('📂 "'+rec.name+'" 불러오기 완료');
 }
 
 function ui(){
@@ -448,4 +434,3 @@ ui();loadSDK();
 </script>
 </body>
 </html>
-
