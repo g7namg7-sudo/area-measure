@@ -21,7 +21,6 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;}
 
-  /* Header */
   .hd{background:var(--card);border-bottom:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;z-index:100;flex-shrink:0;gap:8px;}
   .hd-l{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .logo{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#00c4ff);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 12px rgba(0,224,158,.15);}
@@ -30,7 +29,6 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
   .tog b{padding:6px 12px;border:none;border-radius:6px;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;background:transparent;color:var(--text3);}
   .tog b.on{background:var(--accent);color:var(--bg);} .tog b.on.bl{background:var(--blue);}
 
-  /* Search - attached below header */
   .srch{background:var(--card);border-bottom:1px solid var(--border);padding:6px 12px 10px;display:flex;gap:6px;z-index:100;flex-shrink:0;}
   .srch-wrap{position:relative;flex:1;display:flex;gap:6px;}
   .srch-input{flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;}
@@ -46,10 +44,10 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
   .srch-item .sname{font-weight:600;color:var(--text);margin-bottom:2px;}
   .srch-item .saddr{color:var(--text3);font-size:11px;}
 
-  /* Map */
-  .mw{flex:1;position:relative;overflow:hidden;}
-  #mapOuter{position:absolute;inset:0;overflow:hidden;}
-  #mapInner{position:absolute;width:142%;height:142%;left:-21%;top:-21%;transform-origin:center center;transition:none;}
+  /* Map with 3D perspective */
+  .mw{flex:1;position:relative;overflow:hidden;perspective:1200px;}
+  #mapOuter{position:absolute;inset:0;overflow:hidden;transform-style:preserve-3d;}
+  #mapInner{position:absolute;width:150%;height:150%;left:-25%;top:-25%;transform-origin:center center;transition:none;transform-style:preserve-3d;}
   #map{width:100%;height:100%;}
 
   .mc{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:50;}
@@ -64,6 +62,10 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
   .compass-n{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;color:#ff4444;}
   .compass-needle{width:3px;height:18px;background:linear-gradient(to bottom,#ff4444 50%,#fff 50%);border-radius:2px;transform-origin:center center;}
   .compass-deg{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text2);white-space:nowrap;background:var(--card);padding:1px 6px;border-radius:8px;border:1px solid var(--border);}
+
+  /* Tilt indicator */
+  .tilt-ind{position:absolute;bottom:16px;left:12px;z-index:50;display:none;align-items:center;gap:4px;padding:4px 10px;background:var(--card);border:1px solid var(--border);border-radius:16px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text2);box-shadow:0 2px 12px rgba(0,0,0,.3);cursor:pointer;}
+  .tilt-ind.show{display:flex;}
 
   .mi{position:absolute;top:12px;left:12px;z-index:50;display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;backdrop-filter:blur(12px);box-shadow:0 2px 12px rgba(0,0,0,.3);max-width:calc(100vw - 80px);}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pu 2s infinite;}
@@ -107,7 +109,6 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
   <button class="mb" style="width:36px;height:36px;font-size:14px;" onclick="tmt()">🗺️</button>
 </div>
 
-<!-- Search bar attached to header -->
 <div class="srch">
   <div class="srch-wrap" id="srchWrap">
     <input class="srch-input" id="srchIn" type="text" placeholder="주소 또는 장소 검색..." enterkeyhint="search">
@@ -135,6 +136,7 @@ var mB=new Blob([JSON.stringify(mData)],{type:'application/json'});var mL=docume
     </div>
     <div class="compass-deg" id="compDeg">0°</div>
   </div>
+  <div class="tilt-ind" id="tiltInd" onclick="resetTilt()">↕ <span id="tiltDeg">0°</span> 틸트</div>
   <div class="tst" id="tst"></div>
 </div>
 
@@ -166,8 +168,11 @@ var M,md='area',mti=0,ps=null;
 var aP=[],aM=[],aPL=null,aPG=null;
 var dP=[],dM=[],dPL=null,dLB=[];
 var gW=null,gMk=null,gCr=null;
-var rotation=0,touchStartAngle=null,startRotation=0;
+var rotation=0,tilt=0;
+var touchStartAngle=null,startRotation=0;
+var tiltStartY=null,startTilt=0;
 var searchMk=null;
+var allOvEls=[];
 
 function loadSDK(){
   var s=document.createElement('script');
@@ -183,7 +188,7 @@ function init(){
   ps=new kakao.maps.services.Places();
   kakao.maps.event.addListener(M,'click',function(e){var ll=e.latLng;if(md==='area')addA(ll.getLat(),ll.getLng());else addD(ll.getLat(),ll.getLng());});
   if(navigator.geolocation){navigator.geolocation.getCurrentPosition(function(p){M.setCenter(new kakao.maps.LatLng(p.coords.latitude,p.coords.longitude));},function(){},{enableHighAccuracy:true,timeout:5000});}
-  initRotation();initSearch();
+  initGestures();initSearch();
   document.getElementById('ov').classList.add('h');ui();
 }
 
@@ -195,7 +200,6 @@ function initSearch(){
 function doSearch(){
   var q=document.getElementById('srchIn').value.trim();
   if(!q){ts('검색어를 입력하세요');return;}
-  if(!ps){ts('검색 서비스 로드 실패');return;}
   ps.keywordSearch(q,function(data,status){
     var res=document.getElementById('srchRes');res.innerHTML='';
     if(status===kakao.maps.services.Status.OK&&data.length>0){
@@ -205,7 +209,7 @@ function doSearch(){
         div.addEventListener('click',function(){
           var pos=new kakao.maps.LatLng(place.y,place.x);M.setCenter(pos);M.setLevel(3);
           if(searchMk)searchMk.setMap(null);searchMk=new kakao.maps.Marker({position:pos});searchMk.setMap(M);
-          res.classList.remove('show');document.getElementById('srchIn').value=place.place_name;ts(place.place_name+'으로 이동');
+          res.classList.remove('show');document.getElementById('srchIn').value=place.place_name;ts(place.place_name);
           document.getElementById('srchIn').blur();
         });res.appendChild(div);
       });res.classList.add('show');
@@ -229,31 +233,99 @@ function doSearch(){
   });
 }
 
-// ─── Two-finger Rotation ───
-function initRotation(){
+// ─── Two-finger Gestures: Rotate + Tilt ───
+var gestureMode=null; // 'rotate' or 'tilt'
+var initMidY=0,initDist=0;
+
+function initGestures(){
   var outer=document.getElementById('mapOuter');
-  outer.addEventListener('touchstart',function(e){if(e.touches.length===2){touchStartAngle=getAngle(e.touches);startRotation=rotation;}},{passive:true});
-  outer.addEventListener('touchmove',function(e){if(e.touches.length===2&&touchStartAngle!==null){var cur=getAngle(e.touches);if(cur!==null){rotation=startRotation+(cur-touchStartAngle);applyRot();}}},{passive:true});
-  outer.addEventListener('touchend',function(e){if(e.touches.length<2)touchStartAngle=null;},{passive:true});
+
+  outer.addEventListener('touchstart',function(e){
+    if(e.touches.length===2){
+      touchStartAngle=getAngle(e.touches);
+      startRotation=rotation;
+      var my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      tiltStartY=my;
+      startTilt=tilt;
+      initMidY=my;
+      gestureMode=null;
+    }
+  },{passive:true});
+
+  outer.addEventListener('touchmove',function(e){
+    if(e.touches.length===2){
+      var curAngle=getAngle(e.touches);
+      var curMidY=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      var angleDelta=Math.abs(curAngle-touchStartAngle);
+      var yDelta=Math.abs(curMidY-initMidY);
+
+      // Determine gesture type if not decided yet
+      if(!gestureMode){
+        if(angleDelta>3)gestureMode='rotate';
+        else if(yDelta>10)gestureMode='tilt';
+        else return;
+      }
+
+      if(gestureMode==='rotate'){
+        rotation=startRotation+(curAngle-touchStartAngle);
+        applyTransform();
+      }else if(gestureMode==='tilt'){
+        // Drag up = tilt forward (positive rotateX)
+        var delta=(tiltStartY-curMidY)*0.15;
+        tilt=Math.max(0,Math.min(60,startTilt+delta));
+        applyTransform();
+      }
+    }
+  },{passive:true});
+
+  outer.addEventListener('touchend',function(e){
+    if(e.touches.length<2){touchStartAngle=null;gestureMode=null;}
+  },{passive:true});
 }
+
 function getAngle(t){if(t.length<2)return null;return Math.atan2(t[1].clientY-t[0].clientY,t[1].clientX-t[0].clientX)*180/Math.PI;}
 
-function applyRot(){
+function applyTransform(){
+  var inner=document.getElementById('mapInner');
+  inner.style.transform='rotateX('+tilt+'deg) rotate('+rotation+'deg)';
+
+  // Counter-rotate overlays (gyroscope effect)
+  var deg=-rotation;
+  allOvEls.forEach(function(el){if(el&&el.style)el.style.transform='rotate('+deg+'deg)';});
+
+  // Compass
   var norm=((rotation%360)+360)%360;
-  document.getElementById('mapInner').style.transform='rotate('+rotation+'deg)';
   var cw=document.getElementById('compWrap');
-  if(Math.abs(norm)<1||Math.abs(norm-360)<1){cw.classList.remove('show');}
-  else{
-    cw.classList.add('show');
-    document.getElementById('compNeedle').style.transform='rotate('+(-rotation)+'deg)';
-    document.getElementById('compN').style.transform='translateX(-50%) rotate('+(-rotation)+'deg)';
-    document.getElementById('compDeg').textContent=Math.round(norm)+'°';
-  }
+  if(Math.abs(norm)<1||Math.abs(norm-360)<1){
+    if(tilt<1)cw.classList.remove('show');
+    else cw.classList.add('show');
+  }else{cw.classList.add('show');}
+  document.getElementById('compNeedle').style.transform='rotate('+(-rotation)+'deg)';
+  document.getElementById('compN').style.transform='translateX(-50%) rotate('+(-rotation)+'deg)';
+  document.getElementById('compDeg').textContent=Math.round(norm)+'°';
+
+  // Tilt indicator
+  var ti=document.getElementById('tiltInd');
+  if(tilt>1){ti.classList.add('show');document.getElementById('tiltDeg').textContent=Math.round(tilt)+'°';}
+  else{ti.classList.remove('show');}
 }
+
 function resetRot(){
-  rotation=0;var inner=document.getElementById('mapInner');
-  inner.style.transition='transform 0.3s ease';applyRot();
-  setTimeout(function(){inner.style.transition='none';},350);ts('북쪽 정렬');
+  rotation=0;tilt=0;
+  var inner=document.getElementById('mapInner');
+  inner.style.transition='transform 0.3s ease';
+  applyTransform();
+  setTimeout(function(){inner.style.transition='none';},350);
+  ts('북쪽 정렬');
+}
+
+function resetTilt(){
+  tilt=0;
+  var inner=document.getElementById('mapInner');
+  inner.style.transition='transform 0.3s ease';
+  applyTransform();
+  setTimeout(function(){inner.style.transition='none';},350);
+  ts('평면 보기');
 }
 
 // ─── Controls ───
@@ -279,18 +351,29 @@ function tmt(){
   ts(n[mti]);
 }
 
-// ─── Area ───
-function mkEl(n,color){var c=document.createElement('div');c.style.cssText='width:24px;height:24px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f1117;border:2.5px solid '+color+';box-shadow:0 2px 8px rgba(0,0,0,.4);font-family:JetBrains Mono,monospace;';c.textContent=n;return c;}
+// ─── Markers ───
+function mkEl(n,color){
+  var c=document.createElement('div');
+  c.style.cssText='width:24px;height:24px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f1117;border:2.5px solid '+color+';box-shadow:0 2px 8px rgba(0,0,0,.4);font-family:JetBrains Mono,monospace;transform:rotate('+(-rotation)+'deg);';
+  c.textContent=n;
+  allOvEls.push(c);
+  return c;
+}
+function mkLbl(txt){
+  var le=document.createElement('div');le.className='slbl';le.textContent=txt;
+  le.style.transform='rotate('+(-rotation)+'deg)';
+  allOvEls.push(le);
+  return le;
+}
 
 function addA(lat,lng){aP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(aP.length,'#00e09e'),yAnchor:.5,xAnchor:.5});o.setMap(M);aM.push(o);updAO();ui();}
 function updAO(){if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}var path=aP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){var cp=path.slice();if(aP.length>=3)cp.push(path[0]);aPL=new kakao.maps.Polyline({path:cp,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid'});aPL.setMap(M);}if(aP.length>=3){aPG=new kakao.maps.Polygon({path:path,strokeWeight:3,strokeColor:'#00e09e',strokeOpacity:.9,strokeStyle:'solid',fillColor:'#00e09e',fillOpacity:.15});aPG.setMap(M);}}
 
-// ─── Distance ───
-function addD(lat,lng){dP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});o.setMap(M);dM.push(o);if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var le=document.createElement('div');le.className='slbl';le.textContent=fD(d);var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:le,yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}updDO();ui();}
+function addD(lat,lng){dP.push({lat:lat,lng:lng});var o=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(lat,lng),content:mkEl(dP.length,'#4da6ff'),yAnchor:.5,xAnchor:.5});o.setMap(M);dM.push(o);if(dP.length>=2){var prev=dP[dP.length-2],cur=dP[dP.length-1],d=hav(prev,cur),ml=(prev.lat+cur.lat)/2,mg=(prev.lng+cur.lng)/2;var lo=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(ml,mg),content:mkLbl(fD(d)),yAnchor:1.8,xAnchor:.5});lo.setMap(M);dLB.push(lo);}updDO();ui();}
 function updDO(){if(dPL){dPL.setMap(null);dPL=null;}var path=dP.map(function(p){return new kakao.maps.LatLng(p.lat,p.lng)});if(path.length>=2){dPL=new kakao.maps.Polyline({path:path,strokeWeight:3,strokeColor:'#4da6ff',strokeOpacity:.9,strokeStyle:'solid'});dPL.setMap(M);}}
 
 function ud(){if(md==='area'){if(!aP.length)return;aP.pop();var m=aM.pop();if(m)m.setMap(null);updAO();}else{if(!dP.length)return;dP.pop();var dm=dM.pop();if(dm)dm.setMap(null);var dl=dLB.pop();if(dl)dl.setMap(null);updDO();}ui();ts('마지막 점 제거');}
-function cl(){if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}ui();ts('초기화 완료');}
+function cl(){if(md==='area'){aP=[];aM.forEach(function(m){m.setMap(null)});aM=[];if(aPL){aPL.setMap(null);aPL=null;}if(aPG){aPG.setMap(null);aPG=null;}}else{dP=[];dM.forEach(function(m){m.setMap(null)});dM=[];dLB.forEach(function(l){l.setMap(null)});dLB=[];if(dPL){dPL.setMap(null);dPL=null;}}allOvEls=[];ui();ts('초기화 완료');}
 
 // ─── Calc ───
 function calcA(pts){if(pts.length<3)return 0;var R=6371000,rad=Math.PI/180,t=0,n=pts.length;for(var i=0;i<n;i++){var j=(i+1)%n,k=(i+2)%n;t+=(pts[k].lng-pts[i].lng)*rad*Math.sin(pts[j].lat*rad);}return Math.abs(t*R*R/2);}
