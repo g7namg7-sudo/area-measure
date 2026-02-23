@@ -414,4 +414,38 @@ function doLoad(rec){
   if(rec.points.length>=2&&M){
     var bounds=new kakao.maps.LatLngBounds();
     rec.points.forEach(function(p){bounds.extend(new kakao.maps.LatLng(p.lat,p.lng));});
-    M.setBounds(bounds,80
+       M.setBounds(bounds,80,50,80,50);
+  }
+  closeLoad();
+  ui();
+  ts('📂 "'+rec.name+'" 불러오기 완료');
+}
+
+function ui(){
+  var ind=document.getElementById('mi'),mt=document.getElementById('mt');
+  ['eA','pA','eD','pD','eAL','eDL'].forEach(function(id){document.getElementById(id).style.display='none';});
+  var hasSaves=getSaves().length>0;
+  if(md==='area'){
+    if(!aP.length){document.getElementById('eA').style.display='block';if(hasSaves)document.getElementById('eAL').style.display='block';ind.className='mi';mt.textContent='지도를 탭하여 꼭짓점을 추가하세요';}
+    else{document.getElementById('pA').style.display='block';var area=calcA(aP),peri=calcP(aP),py=area/3.305785;
+      if(aP.length<3){document.getElementById('vA').innerHTML='—<span class="su">평</span>';document.getElementById('vAS').textContent='꼭짓점 3개 이상 필요';}
+      else{document.getElementById('vA').innerHTML=py.toLocaleString('ko-KR',{maximumFractionDigits:1})+'<span class="su">평</span>';document.getElementById('vAS').textContent=area.toLocaleString('ko-KR',{maximumFractionDigits:1})+' ㎡';}
+      document.getElementById('vP').innerHTML=fH(peri);document.getElementById('vN').innerHTML=aP.length+'<span class="su">개</span>';
+      if(aP.length<3){ind.className='mi dr';mt.textContent='꼭짓점 추가 중... ('+(3-aP.length)+'개 더 필요)';}
+      else{ind.className='mi ok';mt.textContent=aP.length+'각형 · '+py.toLocaleString('ko-KR',{maximumFractionDigits:0})+' 평 · '+area.toLocaleString('ko-KR',{maximumFractionDigits:0})+' ㎡';}}
+  }else{
+    if(!dP.length){document.getElementById('eD').style.display='block';if(hasSaves)document.getElementById('eDL').style.display='block';ind.className='mi di';mt.textContent='지도를 탭하여 거리를 측정하세요';}
+    else{document.getElementById('pD').style.display='block';var td=calcTD(dP);
+      document.getElementById('vD').innerHTML=fH(td);document.getElementById('vDS').textContent=td>=1000?td.toLocaleString('ko-KR',{maximumFractionDigits:0})+' m':'';
+      if(dP.length>=2){var ls=hav(dP[dP.length-2],dP[dP.length-1]);document.getElementById('vLS').innerHTML=fH(ls);}else document.getElementById('vLS').innerHTML='—<span class="su">m</span>';
+      document.getElementById('vDN').innerHTML=dP.length+'<span class="su">개</span>';ind.className='mi di';mt.textContent='거리 측정 · '+fD(td);}
+  }
+}
+
+function ts(m){var t=document.getElementById('tst');t.textContent=m;t.classList.add('sh');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('sh')},2000);}
+
+ui();loadSDK();
+</script>
+</body>
+</html>
+
